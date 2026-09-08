@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merge Sort & Shellsort — Trabalho</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style type="text/tailwindcss">
+@theme {
+  --color-bg: #090b16;
+  --color-surface: #131a2e;
+  --color-text: #eef2ff;
+  --color-text-secondary: #c8d3f7;
+  --color-text-muted: #92a0cf;
+  --color-accent-1: #4de9ff;
+  --color-accent-2: #a855f7;
+  --color-accent-3: #22c55e;
+  --font-display: 'Orbitron', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+</style>
+<style>
+:root{ --color-bg:#090b16; --color-text:#eef2ff; --glow-color-rgb:77,233,255; --color-vignette:rgba(0,0,0,.45); }
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{background:var(--color-bg);margin:0}
+body{font-family:var(--font-body);color:var(--color-text);min-height:100vh;position:relative}
+body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");background-repeat:repeat;background-size:256px 256px;opacity:.035;mix-blend-mode:overlay}
+.page-blob{position:fixed;border-radius:50%;filter:blur(110px);z-index:0;pointer-events:none;animation:float-slow 22s ease-in-out infinite}
+.mouse-spotlight{position:fixed;inset:0;z-index:2;pointer-events:none}
+
+.site-nav{position:sticky;top:0;z-index:200;background:rgba(9,11,22,.72);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08)}
+.site-nav-inner{max-width:1180px;margin:0 auto;padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{font-family:var(--font-display);font-size:.95rem;letter-spacing:.04em;color:var(--color-accent-1)}
+.navlink{padding:.5rem .95rem;border-radius:999px;font-size:.82rem;color:var(--color-text-secondary);cursor:pointer;transition:.2s;white-space:nowrap;border:1px solid transparent}
+.navlink:hover{color:#fff;background:rgba(255,255,255,.07)}
+.navlink.active{color:#04141a;background:var(--color-accent-1);font-weight:600}
+
+main{position:relative;z-index:10;max-width:1180px;margin:0 auto;padding:2.5rem 1.25rem 5rem}
+.view{display:none}
+.view.active{display:block;animation:fade-in .4s ease}
+@keyframes fade-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.gradient-mesh{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.blob{position:absolute;border-radius:50%;filter:blur(84px);animation:float-slow 12s ease-in-out infinite}
+.blob:nth-child(2){animation:float-drift 18s ease-in-out infinite}
+.blob:nth-child(3){animation:float-slow 20s ease-in-out infinite reverse}
+@keyframes float-slow{0%{transform:translate(0,0) scale(1)}25%{transform:translate(60px,-50px) scale(1.12)}50%{transform:translate(-40px,40px) scale(.9)}75%{transform:translate(50px,20px) scale(1.08)}100%{transform:translate(0,0) scale(1)}}
+@keyframes float-drift{0%{transform:translate(0,0) scale(1) rotate(0)}33%{transform:translate(-50px,-60px) scale(1.15) rotate(3deg)}66%{transform:translate(40px,30px) scale(.88) rotate(-2deg)}100%{transform:translate(0,0) scale(1) rotate(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.scanlines{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(to bottom,rgba(255,255,255,.03) 0,rgba(255,255,255,0) 2px,rgba(255,255,255,0) 4px);background-size:100% 4px;opacity:.09}
+.text-glow{text-shadow:0 0 18px rgba(var(--glow-color-rgb),.55),0 0 42px rgba(var(--glow-color-rgb),.24)}
+
+.hero-view{position:relative;overflow:hidden;border-radius:28px;padding:4.5rem 1.5rem;min-height:56vh;display:flex;align-items:center;justify-content:center;background:var(--color-surface);border:1px solid rgba(255,255,255,.08)}
+.hero-view .content{position:relative;z-index:2}
+
+.pixel-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.42rem .85rem;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);font-size:.8rem;color:var(--color-text-secondary)}
+.game-card{background:rgba(255,255,255,.06);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:1.15rem 1.25rem;box-shadow:0 12px 40px rgba(0,0,0,.25);transition:transform .25s ease, box-shadow .25s ease, border-color .2s}
+.game-card:hover{transform:translateY(-3px);box-shadow:0 18px 50px rgba(0,0,0,.34)}
+.codebox{background:#050d1a;border:1px solid rgba(77,233,255,.22);border-radius:18px;padding:1rem;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.73rem;line-height:1.35;color:#ddf8ff;white-space:pre-wrap}
+.timeline{position:relative;padding-left:28px}
+.timeline:before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--color-accent-1),var(--color-accent-2))}
+.node{position:relative;padding:0 0 18px 18px}
+.node:before{content:'';position:absolute;left:-26px;top:5px;width:14px;height:14px;border-radius:50%;background:var(--color-accent-1);box-shadow:0 0 20px rgba(77,233,255,.55)}
+.bar-track{height:20px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--color-accent-1),var(--color-accent-2));transition:width .5s ease}
+.small-muted{font-size:.92rem;line-height:1.4;color:var(--color-text-secondary)}
+.owner{position:absolute;top:20px;right:20px;z-index:3;padding:8px 13px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:#fff}
+
+.deck-wrapper{position:relative;width:100%;aspect-ratio:16/9;border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 80px rgba(0,0,0,.5);background:var(--color-bg)}
+.deck{position:absolute;inset:0}
+.slide{position:absolute;inset:0;background:var(--color-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transform:scale(.96);transition:opacity .6s ease,transform .6s ease;pointer-events:none;overflow:hidden}
+.slide.active{opacity:1;transform:scale(1);pointer-events:all}
+.slide>.content{position:relative;z-index:2;width:100%;max-width:900px;padding:clamp(1.2rem,3.4vw,2.6rem)}
+.slide::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");background-repeat:repeat;background-size:256px 256px;opacity:.03;mix-blend-mode:overlay}
+.slide::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 50%,var(--color-vignette) 100%)}
+.reveal{opacity:0;transform:translateY(16px)}
+.nav-controls{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;z-index:100;background:rgba(8,12,24,.6);backdrop-filter:blur(12px);padding:8px 18px;border-radius:40px;border:1px solid rgba(255,255,255,.1)}
+.nav-btn{width:34px;height:34px;border:none;background:rgba(255,255,255,.08);color:var(--color-accent-1);border-radius:50%;font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.slide-dots{display:flex;gap:6px}
+.slide-dots .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:.3s}
+.slide-dots .dot.active{background:var(--color-accent-1);transform:scale(1.3)}
+.slide-counter{font-size:.75rem;color:var(--color-text-muted);min-width:40px;text-align:center}
+
+.gbtn{padding:.6rem 1.3rem;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:var(--color-text);font-size:.85rem;cursor:pointer;transition:.15s}
+.gbtn:hover{border-color:var(--color-accent-1)}
+.gbtn.primary{background:var(--color-accent-1);color:#04141a;border-color:var(--color-accent-1);font-weight:600}
+.gbtn.primary:hover{opacity:.9}
+.tile{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.1rem;cursor:pointer;transition:.15s;user-select:none}
+.tile:hover{border-color:var(--color-accent-1)}
+.tile.selected{background:rgba(77,233,255,.18);border-color:var(--color-accent-1)}
+.tile.locked{background:rgba(34,197,94,.14);border-color:var(--color-accent-3);cursor:default}
+.gbox{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:.95rem;transition:.2s}
+.gbox.hl{border-color:var(--color-accent-2);background:rgba(168,85,247,.18)}
+
+.quiz-opt{text-align:left;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:.85rem 1.1rem;color:var(--color-text);font-size:.95rem;cursor:pointer;transition:.15s;font-family:var(--font-body)}
+.quiz-opt:hover:not(.disabled){border-color:var(--color-accent-1);background:rgba(77,233,255,.08)}
+.quiz-opt.correct{border-color:var(--color-accent-3);background:rgba(34,197,94,.16)}
+.quiz-opt.wrong{border-color:#ef4444;background:rgba(239,68,68,.16)}
+.quiz-opt.disabled{cursor:default}
+</style>
+</head>
+<body>
+
+<div class="mouse-spotlight" id="spotlight"></div>
+<div class="page-blob" style="width:480px;height:480px;top:-140px;left:-100px;background:var(--color-accent-1);opacity:.10"></div>
+<div class="page-blob" style="width:420px;height:420px;bottom:-160px;right:-120px;background:var(--color-accent-2);opacity:.09"></div>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <div class="brand">MERGE // SHELL</div>
+    <div class="flex gap-1.5 overflow-x-auto" id="nav">
+      <div class="navlink active" data-view="inicio">Início</div>
+      <div class="navlink" data-view="apresentacao">Apresentação</div>
+      <div class="navlink" data-view="pratica">Prática</div>
+      <div class="navlink" data-view="resumo">Resumo</div>
+      <div class="navlink" data-view="estudos">Estudos</div>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+  <section id="view-inicio" class="view active">
+    <div class="hero-view">
+      <div class="gradient-mesh">
+        <div class="blob" style="width:460px;height:460px;top:-120px;right:-100px;background:var(--color-accent-1);opacity:.16"></div>
+        <div class="blob" style="width:300px;height:300px;bottom:-70px;left:-50px;background:var(--color-accent-2);opacity:.15"></div>
+        <div class="blob" style="width:200px;height:200px;top:40%;left:12%;background:var(--color-accent-3);opacity:.1"></div>
+      </div>
+      <div class="scanlines"></div>
+      <div class="content text-center">
+        <div class="text-[92px] mb-3" style="animation:float 3s ease-in-out infinite">🕹️</div>
+        <div class="pixel-badge mb-4">Trabalho em grupo · Daniel · Leonardo · Mario · Matheus</div>
+        <h1 class="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black mb-4 text-glow" style="color:var(--color-accent-1)">Merge Sort & Shellsort</h1>
+        <p class="text-text-secondary max-w-xl mx-auto mb-10">Apresentação, jogos de prática, resumo e um quiz para revisar antes da entrega — tudo num só lugar.</p>
+        <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4 text-left">
+          <div class="game-card cursor-pointer" data-goto="apresentacao">
+            <div class="text-2xl mb-2">🖥️</div>
+            <h3 class="font-semibold mb-1">Apresentação</h3>
+            <p class="small-muted text-sm">O slide show completo, com a fala de cada participante.</p>
+          </div>
+          <div class="game-card cursor-pointer" data-goto="pratica">
+            <div class="text-2xl mb-2">🎮</div>
+            <h3 class="font-semibold mb-1">Prática</h3>
+            <p class="small-muted text-sm">Dois joguinhos para fixar a lógica dos algoritmos.</p>
+          </div>
+          <div class="game-card cursor-pointer" data-goto="resumo">
+            <div class="text-2xl mb-2">📋</div>
+            <h3 class="font-semibold mb-1">Resumo</h3>
+            <p class="small-muted text-sm">Cola rápida com os pontos-chave de cada algoritmo.</p>
+          </div>
+          <div class="game-card cursor-pointer" data-goto="estudos">
+            <div class="text-2xl mb-2">❓</div>
+            <h3 class="font-semibold mb-1">Estudos</h3>
+            <p class="small-muted text-sm">Quiz com pontuação para revisar antes da entrega.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-apresentacao" class="view">
+    <div class="pixel-badge mb-4">Slides do grupo</div>
+    <h2 class="font-display text-2xl mb-5">Apresentação</h2>
+
+    <div class="deck-wrapper">
+      <div class="deck">
+
+        <div class="slide active" data-slide="1">
+          <div class="gradient-mesh"><div class="blob" style="width:420px;height:420px;top:-100px;right:-100px;background:var(--color-accent-1);opacity:.14"></div><div class="blob" style="width:270px;height:270px;bottom:-60px;left:-40px;background:var(--color-accent-2);opacity:.14"></div><div class="blob" style="width:180px;height:180px;top:42%;left:14%;background:var(--color-accent-3);opacity:.1"></div></div>
+          <div class="scanlines"></div>
+          <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1"></canvas>
+          <div class="content text-center">
+            <div class="text-[76px] mb-3 reveal" style="animation:float 3s ease-in-out infinite">🕹️</div>
+            <div class="pixel-badge reveal">Tema arcade cyber · apresentação em grupo</div>
+            <h1 class="font-display text-[clamp(1.8rem,4.6vw,3.4rem)] font-black bg-linear-to-r from-accent-1 via-accent-2 to-accent-3 bg-clip-text text-transparent tracking-tight mt-4 mb-3 reveal">Merge Sort & Shellsort</h1>
+            <p class="text-[clamp(.8rem,1.2vw,1.05rem)] text-text-secondary tracking-[4px] uppercase reveal">Ordenação, desempenho e memória</p>
+            <div class="mt-6 flex justify-center gap-2 flex-wrap reveal">
+              <span class="pixel-badge">Daniel · conceito do Merge Sort</span>
+              <span class="pixel-badge">Leonardo · código em C</span>
+              <span class="pixel-badge">Mario · introdução e gap</span>
+              <span class="pixel-badge">Matheus · análise prática do Shellsort</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" data-slide="2">
+          <div class="owner">Daniel</div>
+          <div class="gradient-mesh"><div class="blob" style="width:300px;height:300px;top:-80px;right:-70px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:190px;height:190px;bottom:-30px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+          <div class="content">
+            <div class="pixel-badge reveal">Merge Sort · base teórica</div>
+            <h2 class="font-display text-[clamp(1.5rem,3.4vw,2.3rem)] mt-3 mb-4 reveal">Dividir para conquistar</h2>
+            <div class="game-card reveal border-l-4" style="border-left-color:var(--color-accent-1)">
+              <div class="text-xs uppercase tracking-[0.18em] text-text-muted mb-2">Daniel</div>
+              <p class="text-sm md:text-base text-text-secondary leading-relaxed">"O Merge Sort funciona com base no princípio de <strong>"Dividir para Conquistar"</strong>. Ele divide recursivamente o vetor ao meio até que cada subvetor tenha apenas um elemento. Depois, ele combina (intercala) esses subvetores de forma ordenada utilizando um vetor auxiliar."</p>
+            </div>
+            <div class="game-card mt-4 reveal"><div class="text-sm text-text-muted uppercase tracking-[0.18em] mb-2">Fluxo do algoritmo</div><div class="timeline"><div class="node"><h3 class="font-semibold text-sm">1. Divide</h3><p class="small-muted">[7, 3, 5, 1] vira [7, 3] e [5, 1].</p></div><div class="node"><h3 class="font-semibold text-sm">2. Resolve</h3><p class="small-muted">As metades continuam sendo divididas até sobrar um único item.</p></div><div class="node"><h3 class="font-semibold text-sm">3. Une</h3><p class="small-muted">As partes retornam já ordenadas: [3, 7] + [1, 5] = [1, 3, 5, 7].</p></div></div></div>
+          </div>
+        </div>
+
+        <div class="slide" data-slide="3">
+          <div class="owner">Daniel</div>
+          <div class="gradient-mesh"><div class="blob" style="width:290px;height:290px;top:-70px;right:-70px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:190px;height:190px;bottom:-40px;left:-20px;background:var(--color-accent-3);opacity:.06"></div></div>
+          <div class="content">
+            <div class="pixel-badge reveal">Merge Sort · desempenho</div>
+            <h2 class="font-display text-[clamp(1.5rem,3.4vw,2.3rem)] mt-3 mb-4 reveal">Forças do Merge Sort</h2>
+            <div class="game-card reveal border-l-4" style="border-left-color:var(--color-accent-1)">
+              <div class="text-xs uppercase tracking-[0.18em] text-text-muted mb-2">Daniel</div>
+              <p class="text-sm md:text-base text-text-secondary leading-relaxed">"Complexidade de Tempo: Sempre será O(n log n) no melhor e pior caso. Ele preserva a ordem original de elementos com valores idênticos."</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+              <div class="game-card reveal text-center"><div class="text-2xl font-black text-glow">O(n log n)</div><p class="small-muted mt-2">Mesmo no melhor e no pior caso.</p></div>
+              <div class="game-card reveal text-center"><div class="text-2xl font-black text-glow">Estável</div><p class="small-muted mt-2">Mantém a ordem relativa de valores iguais.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" data-slide="4">
+          <div class="owner">Daniel</div>
+          <div class="gradient-mesh"><div class="blob" style="width:310px;height:310px;top:-80px;right:-60px;background:#ef4444;opacity:.08"></div><div class="blob" style="width:190px;height:190px;bottom:-30px;left:-20px;background:var(--color-accent-1);opacity:.06"></div></div>
+          <div class="content">
+            <div class="pixel-badge reveal">Merge Sort · limitação</div>
+            <h2 class="font-display text-[clamp(1.5rem,3.4vw,2.3rem)] mt-3 mb-4 reveal">O preço da previsibilidade</h2>
+            <div class="game-card reveal border-l-4" style="border-left-color:var(--color-accent-1)">
+              <div class="text-xs uppercase tracking-[0.18em] text-text-muted mb-2">Daniel</div>
+              <p class="text-sm md:text-base text-text-secondary leading-relaxed">"Não trabalha bem em sistemas com memória muito restrita. Para juntar as duas metades de um vetor, ele precisa alocar um vetor temporário do mesmo tamanho do vetor original para organizar os dados antes de devolvê-los ao local correto."</p>
+            </div>
+            <div class="game-card reveal border-l-4 mt-3" style="border-left-color:var(--color-accent-1)">
+              <div class="text-xs uppercase tracking-[0.18em] text-text-muted mb-2">Daniel</div>
+              <p class="text-sm md:text-base text-text-secondary leading-relaxed">"Mergesort é melhor para quantidades mais massivas de dados."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" data-slide="5">
+          <div class="owner">Leonardo</div>
+          <div class="gradient-mesh"><div class="blob" style="width:300px;height:300px;top:-70px;right:-50px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:200px;height:200px;bottom:-40px;left:-30px;background:var(--color-accent-2);opacity:.06"></div></div>
+          <div class="content">
+            <div class="pixel-badge reveal">Merge Sort · implementação em C</div>
+            <h2 class="font-display text-[clamp(1.5rem,3.4vw,2.3rem)] mt-3 mb-4 reveal">Código central</h2>
+            <div class="grid grid-cols-[1.2fr_.8fr] gap-4 items-start">
+              <div class="codebox reveal">void mergesort(int *v, int n) {
+  int *c = malloc(sizeof(int) * n);
+  sort(v, c, 0, n - 1);
+  free(c);
+}
+
+void sort(int *v, int *c, int i, int f) {
+  if (i >= f) return;
+  int m = (i + f) / 2;
+  sort(v, c, i, m);
+  sort(v, c, m + 1, f);
+  if (v[m] <= v[m + 1]) return;
+  merge(v, c, i, m, f);
+}</div>
+              <div class="game-card reveal"><h3 class="text-base font-semibold mb-2">Pontos para explicar</h3><div class="timeline"><div class="node"><p class="small-muted"><strong>mergesort</strong> cria o vetor auxiliar.</p></div><div class="node"><p class="small-muted"><strong>sort</strong> faz as divisões recursivas.</p></div><div class="node"><p class="small-muted"><strong>merge</strong> intercala as metades em ordem.</p></div><div class="node"><p class="small-muted">O teste <strong>v[m] &lt;= v[m+1]</strong> evita processamento desnecessário.</p></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" data-slide="6">
+          <div class="owner">Mario</div>
+          <div class="gradient-mesh"><div class="blob" style="width:310px;height:310px;top:-70px;right:-70px;background:var(--color-accent-3);opacity:.08"></div><div class="blob" style="width:200px;height:200px;bottom:-30px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+          <canvas class="particle-canvas-ambient" style="position:absolute;inset:0;z-index:1"></canvas>
+          <div class="content">
+            <div class="pixel-badge reveal">Shellsort · introdução</div>
+            <h2 class="font-display text-[clamp(1.5rem,3.4vw,2.3rem)] mt-3 mb-4 reveal">A ideia do gap</h2>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="game-card reveal"><div class="text-3xl mb-2">📏</div><h3 class="text-base font-semibold mb-1">Comparações distantes</h3><p class="small-muted">Em vez de comparar só vizinhos, o Shellsort compara posições mais afastadas, o que acelera o reposicionamento de elementos muito fora do lugar.</p></div>
+              <div class="game-card reveal"><div class="text-3xl mb-2">⚙️</div><h3 class="text-base font-semibold mb-1">Gap</h3><p class="small-muted">Gap é a distância entre os elementos comparados. Esse valor vai diminuindo até chegar em 1.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" data-slide="7">
+          <div class="owner">Matheus</div>
+          <div class="gradient-mesh"><div class="blob" style="width:290px;height:290px;top:-80px;right:-60px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:190px;height:190px;bottom:-20px;left:-20px;background:var(--color-accent-2);opacity:.06"></div></div>
+          <div class="content">
+            <div class="pixel-badge reveal">Shellsort · sua lógica prática</div>
+            <h2 class="font-display text-[clamp(1.5rem,3.4vw,2.3rem)] mt-3 mb-4 reveal">Como ele age no vetor</h2>
+            <div class="grid grid-cols-3 gap-3">
+              <div class="game-card reveal"><div class="text-2xl mb-2">1️⃣</div><h3 class="text-sm font-semibold mb-1">Agrupa por distância</h3><p class="small-muted text-xs">Cada passada organiza elementos separados pelo mesmo gap.</p></div>
+              <div class="game-card reveal"><div class="text-2xl mb-2">2️⃣</div><h3 class="text-sm font-semibold mb-1">Antecipação</h3><p class="small-muted text-xs">Elementos muito deslocados andam mais rápido rumo à posição correta.</p></div>
+              <div class="game-card reveal"><div class="text-2xl mb-2">3️⃣</div><h3 class="text-sm font-semibold mb-1">Fechamento</h3><p class="small-muted text-xs">Quando gap = 1, a última etapa fica mais leve porque o vetor já chega quase ordenado.</p></div>
+            </div>
+            <div class="game-card mt-3 reveal"><p class="small-muted"><strong>Resumo da ideia:</strong> o Shellsort faz parte do trabalho pesado antes do fim, em vez de deixar todos os deslocamentos longos para uma única passada final.</p></div>
+          </div>
+        </div>
+
+        <div class="slide" data-slide="8">
+          <div class="owner">Matheus</div>
+          <div class="gradient-mesh"><div class="blob" style="width:310px;height:310px;top:-80px;right:-70px;background:var(--color-accent-2);opacity:.08"></div><div class="blob" style="width:190px;height:190px;bottom:-20px;left:-30px;background:var(--color-accent-3);opacity:.06"></div></div>
+          <div class="content">
+            <div class="pixel-badge reveal">Shellsort · análise</div>
+            <h2 class="font-display text-[clamp(1.5rem,3.4vw,2.3rem)] mt-3 mb-4 reveal">Vantagens e limitações</h2>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="game-card reveal"><h3 class="text-base font-semibold mb-2">Vantagens</h3><div class="timeline"><div class="node"><p class="small-muted">É in-place, então usa pouca memória extra.</p></div><div class="node"><p class="small-muted">Não precisa de recursão.</p></div><div class="node"><p class="small-muted">Pode superar o Insertion Sort em vetores pequenos ou médios.</p></div></div></div>
+              <div class="game-card reveal"><h3 class="text-base font-semibold mb-2">Limitações</h3><div class="timeline"><div class="node"><p class="small-muted">Não é estável.</p></div><div class="node"><p class="small-muted">O desempenho depende da sequência de gaps.</p></div><div class="node"><p class="small-muted">Com sequência simples, o pior caso pode chegar a O(n²).</p></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" data-slide="9">
+          <div class="owner">Matheus</div>
+          <div class="gradient-mesh"><div class="blob" style="width:300px;height:300px;top:-90px;right:-60px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:200px;height:200px;bottom:-40px;left:-30px;background:var(--color-accent-2);opacity:.06"></div></div>
+          <div class="content">
+            <div class="pixel-badge reveal">Shellsort · aplicação</div>
+            <h2 class="font-display text-[clamp(1.5rem,3.4vw,2.3rem)] mt-3 mb-4 reveal">Quando vale a pena usar?</h2>
+            <div class="grid grid-cols-[1fr_.95fr] gap-4">
+              <div class="game-card reveal"><h3 class="text-base font-semibold mb-2">Cenários mais favoráveis</h3><ul class="text-sm text-text-secondary leading-7 list-disc pl-4"><li>Ambientes com memória limitada.</li><li>Vetores pequenos ou médios.</li><li>Soluções simples, sem recursão.</li><li>Casos em que o vetor já está parcialmente organizado.</li></ul></div>
+              <div class="game-card reveal"><h3 class="text-base font-semibold mb-2">Comparação rápida</h3><div class="flex justify-between text-xs text-text-secondary mb-1"><span>Economia de memória</span><span>alta</span></div><div class="bar-track"><div class="bar-fill" data-width="86"></div></div><div class="flex justify-between text-xs text-text-secondary mt-3 mb-1"><span>Previsibilidade de tempo</span><span>média</span></div><div class="bar-track"><div class="bar-fill" data-width="58" style="background:linear-gradient(90deg,var(--color-accent-2),var(--color-accent-3))"></div></div><div class="flex justify-between text-xs text-text-secondary mt-3 mb-1"><span>Indicado para dados massivos</span><span>menor</span></div><div class="bar-track"><div class="bar-fill" data-width="40" style="background:linear-gradient(90deg,#f59e0b,#ef4444)"></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" data-slide="10">
+          <div class="owner">Grupo</div>
+          <div class="gradient-mesh"><div class="blob" style="width:320px;height:320px;top:-80px;right:-80px;background:var(--color-accent-1);opacity:.08"></div><div class="blob" style="width:210px;height:210px;bottom:-40px;left:-30px;background:var(--color-accent-2);opacity:.07"></div></div>
+          <div class="content">
+            <div class="pixel-badge reveal">Comparação final</div>
+            <h2 class="font-display text-[clamp(1.5rem,3.4vw,2.3rem)] mt-3 mb-4 reveal">Merge Sort vs Shellsort</h2>
+            <div class="grid grid-cols-3 gap-2 reveal text-sm">
+              <div class="game-card"><h3 class="font-semibold">Critério</h3></div>
+              <div class="game-card"><h3 class="font-semibold">Merge Sort</h3></div>
+              <div class="game-card"><h3 class="font-semibold">Shellsort</h3></div>
+              <div class="game-card"><p class="small-muted">Estratégia</p></div>
+              <div class="game-card"><p class="small-muted">Divide o vetor e intercala em ordem.</p></div>
+              <div class="game-card"><p class="small-muted">Usa comparações com gaps decrescentes.</p></div>
+              <div class="game-card"><p class="small-muted">Tempo</p></div>
+              <div class="game-card"><p class="small-muted">O(n log n) previsível.</p></div>
+              <div class="game-card"><p class="small-muted">Depende da sequência de gaps.</p></div>
+              <div class="game-card"><p class="small-muted">Memória</p></div>
+              <div class="game-card"><p class="small-muted">Precisa de vetor auxiliar.</p></div>
+              <div class="game-card"><p class="small-muted">Pouca memória extra.</p></div>
+              <div class="game-card"><p class="small-muted">Estabilidade</p></div>
+              <div class="game-card"><p class="small-muted">Estável.</p></div>
+              <div class="game-card"><p class="small-muted">Não estável.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" data-slide="11">
+          <div class="gradient-mesh"><div class="blob" style="width:400px;height:400px;top:-90px;right:-90px;background:var(--color-accent-1);opacity:.14"></div><div class="blob" style="width:260px;height:260px;bottom:-70px;left:-50px;background:var(--color-accent-2);opacity:.12"></div><div class="blob" style="width:180px;height:180px;top:38%;left:16%;background:var(--color-accent-3);opacity:.1"></div></div>
+          <div class="scanlines"></div>
+          <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1"></canvas>
+          <div class="content text-center">
+            <div class="text-[72px] mb-3 reveal" style="animation:float 3s ease-in-out infinite">👾</div>
+            <h2 class="font-display text-[clamp(1.7rem,4vw,2.8rem)] bg-linear-to-r from-accent-1 via-accent-2 to-accent-3 bg-clip-text text-transparent reveal">Fim de fase</h2>
+            <p class="text-[clamp(.85rem,1.2vw,1.05rem)] text-text-secondary mt-3 reveal">Daniel · Leonardo · Mario · Matheus</p>
+            <p class="text-sm text-text-muted mt-1 reveal">Apresentação sobre Merge Sort e Shellsort</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="nav-controls">
+        <button class="nav-btn" id="slide-prev" aria-label="Anterior">&#8249;</button>
+        <div class="slide-dots" id="dots"></div>
+        <button class="nav-btn" id="slide-next" aria-label="Próximo">&#8250;</button>
+        <span class="slide-counter" id="counter">1 / 11</span>
+      </div>
+    </div>
+    <p class="text-text-muted text-sm mt-3">Use as setas do teclado ou os botões abaixo do slide para navegar.</p>
+  </section>
+
+  <section id="view-pratica" class="view">
+    <div class="pixel-badge mb-4">Modo prática</div>
+    <h2 class="font-display text-2xl mb-6">Jogos</h2>
+    <div class="grid lg:grid-cols-2 gap-6">
+      <div class="game-card">
+        <h3 class="text-xl font-semibold mb-1">Divida & Vença</h3>
+        <p class="text-sm text-text-secondary mb-4">Clique em duas peças para trocá-las de posição e ordene o vetor no menor número de movimentos.</p>
+        <div id="ms-tiles" class="flex gap-2 flex-wrap mb-4"></div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <button class="gbtn primary" id="ms-new">Novo desafio</button>
+          <span class="text-sm text-text-secondary" id="ms-moves">Movimentos: 0</span>
+        </div>
+        <p class="text-sm mt-3" id="ms-msg" style="color:var(--color-accent-3)"></p>
+      </div>
+
+      <div class="game-card">
+        <h3 class="text-xl font-semibold mb-1">Gap Ninja</h3>
+        <p class="text-sm text-text-secondary mb-4">No Shellsort, a comparação acontece entre posições separadas por um "gap". Diga se o par destacado está fora de ordem.</p>
+        <div class="text-sm text-text-secondary mb-2">Gap atual: <strong id="ss-gap" class="text-white">-</strong> · Pontos: <strong id="ss-score" class="text-white">0</strong></div>
+        <div id="ss-array" class="flex gap-2 flex-wrap mb-4"></div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <button class="gbtn" id="ss-swap">Fora de ordem (trocar)</button>
+          <button class="gbtn" id="ss-keep">Já em ordem</button>
+          <button class="gbtn primary" id="ss-new">Reiniciar</button>
+        </div>
+        <p class="text-sm mt-3" id="ss-msg" style="color:var(--color-accent-3)"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-resumo" class="view">
+    <div class="pixel-badge mb-4">Cola rápida</div>
+    <h2 class="font-display text-2xl mb-6">Resumo</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="game-card">
+        <h3 class="text-lg font-semibold mb-3" style="color:var(--color-accent-1)">Merge Sort</h3>
+        <ul class="text-sm text-text-secondary space-y-2 list-disc pl-5">
+          <li>Divide o vetor ao meio recursivamente até sobrar 1 elemento.</li>
+          <li>Intercala (merge) as partes em ordem usando um vetor auxiliar.</li>
+          <li>Complexidade sempre O(n log n), melhor e pior caso.</li>
+          <li>É estável: mantém a ordem relativa de valores iguais.</li>
+          <li>Precisa de memória auxiliar O(n) — não é ideal para memória restrita.</li>
+          <li>Melhor escolha para volumes de dados grandes.</li>
+        </ul>
+      </div>
+      <div class="game-card">
+        <h3 class="text-lg font-semibold mb-3" style="color:var(--color-accent-2)">Shellsort</h3>
+        <ul class="text-sm text-text-secondary space-y-2 list-disc pl-5">
+          <li>Compara elementos separados por um "gap" em vez de vizinhos.</li>
+          <li>O gap vai diminuindo a cada passada até chegar a 1.</li>
+          <li>É in-place: usa pouca memória extra, não precisa de recursão.</li>
+          <li>Não é estável.</li>
+          <li>Desempenho depende da sequência de gaps escolhida.</li>
+          <li>Com sequência simples, o pior caso pode chegar a O(n²).</li>
+          <li>Bom para vetores pequenos/médios ou já quase ordenados.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-estudos" class="view">
+    <div class="pixel-badge mb-4">Revisão</div>
+    <h2 class="font-display text-2xl mb-6">Quiz: Merge Sort & Shellsort</h2>
+    <div id="quiz-wrap" class="max-w-xl"></div>
+  </section>
+
+</main>
+
+<script>
+function setView(name){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.navlink').forEach(n => n.classList.toggle('active', n.dataset.view === name));
+  if (name === 'apresentacao') initApresentacaoCanvases();
+  window.scrollTo({top:0, behavior:'instant'});
+}
+document.getElementById('nav').addEventListener('click', e => {
+  const t = e.target.closest('.navlink');
+  if (t) setView(t.dataset.view);
+});
+document.querySelectorAll('[data-goto]').forEach(el => {
+  el.addEventListener('click', () => setView(el.dataset.goto));
+});
+
+let slideCurrent = 1;
+const slideTotal = document.querySelectorAll('#view-apresentacao .slide').length;
+const dotsContainer = document.getElementById('dots');
+const counter = document.getElementById('counter');
+for (let i = 1; i <= slideTotal; i++) { const dot = document.createElement('div'); dot.className = 'dot' + (i === 1 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); }
+function goToSlide(n) {
+  const prev = document.querySelector('#view-apresentacao .slide.active');
+  const next = document.querySelector('#view-apresentacao .slide[data-slide="' + n + '"]');
+  if (prev) prev.classList.remove('active');
+  if (next) { next.classList.add('active'); animateSlide(next); }
+  slideCurrent = n;
+  updateSlideNav();
+}
+function changeSlide(dir) { let next = slideCurrent + dir; if (next < 1) next = slideTotal; if (next > slideTotal) next = 1; goToSlide(next); }
+function updateSlideNav() { document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === slideCurrent)); counter.textContent = slideCurrent + ' / ' + slideTotal; }
+document.getElementById('slide-prev').addEventListener('click', () => changeSlide(-1));
+document.getElementById('slide-next').addEventListener('click', () => changeSlide(1));
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('view-apresentacao').classList.contains('active')) return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+});
+function animateSlide(slide) {
+  slide.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transition = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(16px)'; el.offsetHeight;
+    const delay = i * 0.07; el.style.transition = 'opacity 0.35s ease ' + delay + 's, transform 0.35s ease ' + delay + 's'; el.style.opacity = '1'; el.style.transform = 'translateY(0px)';
+  });
+  slide.querySelectorAll('.bar-fill:not(.fill-init)').forEach((bar, i) => { bar.classList.add('fill-init'); bar.style.width = '0%'; bar.style.transition = 'width 0.6s ease ' + (i * 0.08) + 's'; bar.offsetHeight; bar.style.width = bar.dataset.width + '%'; });
+}
+document.addEventListener('mousemove', (e) => { const spotlight = document.getElementById('spotlight'); if (spotlight) spotlight.style.background = 'radial-gradient(600px circle at ' + e.clientX + 'px ' + e.clientY + 'px, rgba(77,233,255,0.05), transparent 40%)'; });
+
+window.initParticles = function(canvas, options) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d'); canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+  const interactive = options.interactive !== false; const count = options.count || (interactive ? 45 : 16);
+  let mx = -1000, my = -1000;
+  const particles = Array.from({ length: count }, () => ({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, size: Math.random() * 2.5 + 0.8, alpha: Math.random() * 0.35 + 0.1 }));
+  if (interactive) { canvas.addEventListener('mousemove', (e) => { const rect = canvas.getBoundingClientRect(); mx = e.clientX - rect.left; my = e.clientY - rect.top; }); canvas.addEventListener('mouseleave', () => { mx = -1000; my = -1000; }); }
+  (function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      if (interactive) { const dx = p.x - mx, dy = p.y - my, dist = Math.sqrt(dx * dx + dy * dy) || 1; if (dist < 110) { const force = (110 - dist) / 110 * 2; p.vx += (dx / dist) * force * 0.1; p.vy += (dy / dist) * force * 0.1; } }
+      p.vx *= 0.98; p.vy *= 0.98; p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0; if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fillStyle = 'rgba(77,233,255,' + p.alpha + ')'; ctx.fill();
+    });
+    requestAnimationFrame(animate);
+  })();
+};
+function initApresentacaoCanvases(){
+  document.querySelectorAll('#view-apresentacao .particle-canvas, #view-apresentacao .particle-canvas-ambient').forEach(c => {
+    if (c.dataset.inited) return;
+    c.dataset.inited = '1';
+    const interactive = c.classList.contains('particle-canvas');
+    requestAnimationFrame(() => window.initParticles(c, { interactive: interactive, count: interactive ? 45 : 16 }));
+  });
+}
+try { animateSlide(document.querySelector('#view-apresentacao .slide.active')); } catch(e) {}
+
+(function mergeGame(){
+  const tilesEl = document.getElementById('ms-tiles');
+  const movesEl = document.getElementById('ms-moves');
+  const msgEl = document.getElementById('ms-msg');
+  let arr = [], selected = null, moves = 0;
+  function isSorted(a){ for (let i = 0; i < a.length - 1; i++) if (a[i] > a[i+1]) return false; return true; }
+  function shuffledArray(){
+    let a = [1,2,3,4,5,6];
+    do { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } } while (isSorted(a));
+    return a;
+  }
+  function render(){
+    tilesEl.innerHTML = '';
+    const sorted = isSorted(arr);
+    arr.forEach((v, i) => {
+      const t = document.createElement('div');
+      t.className = 'tile' + (sorted ? ' locked' : '') + (selected === i ? ' selected' : '');
+      t.textContent = v;
+      t.addEventListener('click', () => onTileClick(i));
+      tilesEl.appendChild(t);
+    });
+  }
+  function onTileClick(i){
+    if (isSorted(arr)) return;
+    if (selected === null) { selected = i; render(); return; }
+    if (selected === i) { selected = null; render(); return; }
+    [arr[selected], arr[i]] = [arr[i], arr[selected]];
+    moves++; movesEl.textContent = 'Movimentos: ' + moves; selected = null; render();
+    msgEl.textContent = isSorted(arr) ? ('Ordenado em ' + moves + ' movimentos!') : '';
+  }
+  function newGame(){ arr = shuffledArray(); moves = 0; selected = null; movesEl.textContent = 'Movimentos: 0'; msgEl.textContent = ''; render(); }
+  document.getElementById('ms-new').addEventListener('click', newGame);
+  newGame();
+})();
+
+(function shellGame(){
+  const arrEl = document.getElementById('ss-array');
+  const gapEl = document.getElementById('ss-gap');
+  const scoreEl = document.getElementById('ss-score');
+  const msgEl = document.getElementById('ss-msg');
+  let arr = [], gaps = [], gapIdx = 0, pairIdx = 0, score = 0;
+  function newGame(){
+    arr = Array.from({length: 8}, () => 1 + Math.floor(Math.random() * 30));
+    gaps = [4, 2, 1]; gapIdx = 0; pairIdx = 0; score = 0;
+    scoreEl.textContent = '0'; msgEl.textContent = ''; render();
+  }
+  function currentPair(){ const gap = gaps[gapIdx]; return [pairIdx, pairIdx + gap]; }
+  function render(){
+    if (gapIdx >= gaps.length) {
+      gapEl.textContent = '-'; msgEl.textContent = 'Vetor ordenado! Pontuação final: ' + score;
+      arrEl.innerHTML = '';
+      arr.forEach(v => { const b = document.createElement('div'); b.className = 'gbox hl'; b.textContent = v; arrEl.appendChild(b); });
+      return;
+    }
+    gapEl.textContent = gaps[gapIdx];
+    const [i, j] = currentPair();
+    arrEl.innerHTML = '';
+    arr.forEach((v, idx) => { const b = document.createElement('div'); b.className = 'gbox' + ((idx === i || idx === j) ? ' hl' : ''); b.textContent = v; arrEl.appendChild(b); });
+  }
+  function advance(){
+    const gap = gaps[gapIdx]; pairIdx++;
+    if (pairIdx + gap >= arr.length) { pairIdx = 0; gapIdx++; }
+    render();
+  }
+  function answer(userSaysSwap){
+    const [i, j] = currentPair(); const outOfOrder = arr[i] > arr[j];
+    if (userSaysSwap === outOfOrder) { score++; scoreEl.textContent = score; }
+    if (outOfOrder) [arr[i], arr[j]] = [arr[j], arr[i]];
+    advance();
+  }
+  document.getElementById('ss-swap').addEventListener('click', () => answer(true));
+  document.getElementById('ss-keep').addEventListener('click', () => answer(false));
+  document.getElementById('ss-new').addEventListener('click', newGame);
+  newGame();
+})();
+
+(function quiz(){
+  const questions = [
+    { q: "Qual é a complexidade de tempo do Merge Sort no pior caso?", opts: ["O(n)", "O(n log n)", "O(n²)", "O(log n)"], correct: 1, exp: "O Merge Sort sempre tem O(n log n), tanto no melhor quanto no pior caso." },
+    { q: "Por que o Merge Sort é considerado estável?", opts: ["Porque nunca usa memória extra", "Porque preserva a ordem original de elementos com valores idênticos", "Porque compara elementos distantes", "Porque não usa recursão"], correct: 1, exp: "A intercalação preserva a ordem relativa de elementos iguais." },
+    { q: "Qual é a principal desvantagem de memória do Merge Sort?", opts: ["Ele não usa memória nenhuma", "Ele precisa de um vetor auxiliar do mesmo tamanho do original", "Ele modifica o vetor original permanentemente", "Ele usa apenas 1 variável extra"], correct: 1, exp: "Precisa alocar espaço O(n) extra para fazer o merge." },
+    { q: 'O que é o "gap" no Shellsort?', opts: ["O tempo de execução do algoritmo", "A distância entre os elementos comparados", "O número de elementos do vetor", "A quantidade de trocas feitas"], correct: 1, exp: "O gap é a distância entre posições comparadas; ele diminui até chegar a 1." },
+    { q: "O Shellsort é estável?", opts: ["Sim, sempre", "Não", "Só quando o vetor já está ordenado", "Só com gap = 1"], correct: 1, exp: "Ao mover elementos por posições distantes, ele pode alterar a ordem relativa de valores iguais." },
+    { q: "Com uma sequência de gaps simples, qual pode ser o pior caso do Shellsort?", opts: ["O(n log n)", "O(n)", "O(n²)", "O(1)"], correct: 2, exp: "Sequências simples de gap podem levar o Shellsort a O(n²) no pior caso." },
+    { q: "Em quais cenários o Shellsort é mais indicado?", opts: ["Grandes volumes de dados", "Memória limitada e vetores pequenos/médios", "Quando é preciso estabilidade", "Quando há bastante memória disponível"], correct: 1, exp: "Ele é in-place e não precisa de recursão — bom para memória restrita e vetores menores." },
+    { q: "Em quais cenários o Merge Sort é mais indicado?", opts: ["Vetores muito pequenos", "Sistemas com pouquíssima memória", "Grandes volumes de dados com necessidade de previsibilidade", "Quando estabilidade não importa"], correct: 2, exp: "Merge Sort escala bem para grandes volumes e mantém tempo previsível O(n log n)." }
+  ];
+  const wrap = document.getElementById('quiz-wrap');
+  let idx = 0, score = 0, answered = false;
+
+  function renderQuestion(){
+    const item = questions[idx];
+    const pct = Math.round((idx / questions.length) * 100);
+    wrap.innerHTML =
+      '<div class="flex items-center justify-between text-sm text-text-secondary mb-2">' +
+        '<span>Pergunta ' + (idx+1) + ' de ' + questions.length + '</span>' +
+        '<span>Pontos: ' + score + '</span>' +
+      '</div>' +
+      '<div class="bar-track mb-5"><div class="bar-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="game-card">' +
+        '<h3 class="text-lg font-semibold mb-4">' + item.q + '</h3>' +
+        '<div class="flex flex-col gap-2" id="quiz-opts"></div>' +
+        '<p class="text-sm mt-4" id="quiz-exp" style="color:var(--color-text-secondary)"></p>' +
+        '<div class="mt-4" id="quiz-next"></div>' +
+      '</div>';
+    const optsEl = document.getElementById('quiz-opts');
+    item.opts.forEach((opt, i) => {
+      const b = document.createElement('button');
+      b.className = 'quiz-opt';
+      b.textContent = opt;
+      b.addEventListener('click', () => selectAnswer(i));
+      optsEl.appendChild(b);
+    });
+    answered = false;
+  }
+
+  function selectAnswer(i){
+    if (answered) return;
+    answered = true;
+    const item = questions[idx];
+    const opts = document.querySelectorAll('.quiz-opt');
+    opts.forEach((el, j) => {
+      el.classList.add('disabled');
+      if (j === item.correct) el.classList.add('correct');
+      else if (j === i) el.classList.add('wrong');
+    });
+    if (i === item.correct) score++;
+    document.getElementById('quiz-exp').textContent = item.exp;
+    const nextWrap = document.getElementById('quiz-next');
+    const btn = document.createElement('button');
+    btn.className = 'gbtn primary';
+    btn.textContent = (idx === questions.length - 1) ? 'Ver resultado' : 'Próxima pergunta';
+    btn.addEventListener('click', () => {
+      idx++;
+      if (idx >= questions.length) renderResult(); else renderQuestion();
+    });
+    nextWrap.appendChild(btn);
+  }
+
+  function renderResult(){
+    const pct = Math.round((score / questions.length) * 100);
+    let emoji = '🎮';
+    if (pct >= 90) emoji = '🏆'; else if (pct >= 70) emoji = '🥳'; else if (pct >= 40) emoji = '👾'; else emoji = '🔁';
+    wrap.innerHTML =
+      '<div class="game-card text-center">' +
+        '<div class="text-5xl mb-3">' + emoji + '</div>' +
+        '<h3 class="text-xl font-semibold mb-2">Você acertou ' + score + ' de ' + questions.length + '!</h3>' +
+        '<div class="bar-track my-4"><div class="bar-fill" style="width:' + pct + '%"></div></div>' +
+        '<button class="gbtn primary" id="quiz-restart">Jogar novamente</button>' +
+      '</div>';
+    document.getElementById('quiz-restart').addEventListener('click', () => { idx = 0; score = 0; renderQuestion(); });
+  }
+
+  renderQuestion();
+})();
+</script>
+</body>
+</html>
