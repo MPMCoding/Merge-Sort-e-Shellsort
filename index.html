@@ -71,6 +71,10 @@ main{position:relative;z-index:10;max-width:1180px;margin:0 auto;padding:2.5rem 
 .owner{position:absolute;top:20px;right:20px;z-index:3;padding:8px 13px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:#fff}
 
 .deck-wrapper{position:relative;width:100%;aspect-ratio:16/9;border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 80px rgba(0,0,0,.5);background:var(--color-bg)}
+.deck-wrapper:fullscreen{width:100vw;height:100vh;aspect-ratio:auto;border-radius:0;border:none}
+.deck-wrapper:-webkit-full-screen{width:100vw;height:100vh;aspect-ratio:auto;border-radius:0;border:none}
+.fs-btn{position:absolute;top:14px;right:14px;z-index:110;width:38px;height:38px;border:1px solid rgba(255,255,255,.16);background:rgba(8,12,24,.6);backdrop-filter:blur(10px);color:var(--color-accent-1);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.fs-btn:hover{border-color:var(--color-accent-1)}
 .deck{position:absolute;inset:0}
 .slide{position:absolute;inset:0;background:var(--color-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transform:scale(.96);transition:opacity .6s ease,transform .6s ease;pointer-events:none;overflow:hidden}
 .slide.active{opacity:1;transform:scale(1);pointer-events:all}
@@ -167,7 +171,8 @@ main{position:relative;z-index:10;max-width:1180px;margin:0 auto;padding:2.5rem 
     <div class="pixel-badge mb-4">Slides do grupo</div>
     <h2 class="font-display text-2xl mb-5">Apresentação</h2>
 
-    <div class="deck-wrapper">
+    <div class="deck-wrapper" id="deck-wrapper">
+      <button class="fs-btn" id="fs-toggle" aria-label="Tela cheia" title="Tela cheia">&#9974;</button>
       <div class="deck">
 
         <div class="slide active" data-slide="1">
@@ -259,6 +264,7 @@ void sort(int *v, int *c, int i, int f) {
 }</div>
               <div class="game-card reveal"><h3 class="text-base font-semibold mb-2">Pontos para explicar</h3><div class="timeline"><div class="node"><p class="small-muted"><strong>mergesort</strong> cria o vetor auxiliar.</p></div><div class="node"><p class="small-muted"><strong>sort</strong> faz as divisões recursivas.</p></div><div class="node"><p class="small-muted"><strong>merge</strong> intercala as metades em ordem.</p></div><div class="node"><p class="small-muted">O teste <strong>v[m] &lt;= v[m+1]</strong> evita processamento desnecessário.</p></div></div></div>
             </div>
+            <p class="text-xs text-text-muted mt-3 reveal">Fonte do código: <a href="https://gist.github.com/olegon/27c2a880c9b932862e60ab5eb89be5b6" target="_blank" rel="noopener" style="color:var(--color-accent-1)">gist.github.com/olegon/mergesort.c</a></p>
           </div>
         </div>
 
@@ -468,6 +474,21 @@ function changeSlide(dir) { let next = slideCurrent + dir; if (next < 1) next = 
 function updateSlideNav() { document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === slideCurrent)); counter.textContent = slideCurrent + ' / ' + slideTotal; }
 document.getElementById('slide-prev').addEventListener('click', () => changeSlide(-1));
 document.getElementById('slide-next').addEventListener('click', () => changeSlide(1));
+(function fullscreenToggle(){
+  const wrapper = document.getElementById('deck-wrapper');
+  const btn = document.getElementById('fs-toggle');
+  function isFs(){ return document.fullscreenElement || document.webkitFullscreenElement; }
+  btn.addEventListener('click', () => {
+    if (!isFs()) {
+      (wrapper.requestFullscreen || wrapper.webkitRequestFullscreen).call(wrapper);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    }
+  });
+  document.addEventListener('fullscreenchange', updateIcon);
+  document.addEventListener('webkitfullscreenchange', updateIcon);
+  function updateIcon(){ btn.innerHTML = isFs() ? '&#10005;' : '&#9974;'; btn.title = isFs() ? 'Sair da tela cheia' : 'Tela cheia'; }
+})();
 document.addEventListener('keydown', (e) => {
   if (!document.getElementById('view-apresentacao').classList.contains('active')) return;
   if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
